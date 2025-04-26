@@ -7,9 +7,11 @@ namespace MessengerWebAPIBackend.Context
     public class ApplicationContext : DbContext
     {
         public DbSet<User> Users { get; set; }
-        public DbSet<Chat> Chats { get; set; }
         public DbSet<Message> Messages { get; set; }
-        public ApplicationContext() { }
+        public ApplicationContext() 
+        {
+            Database.EnsureCreated();
+        }
         public ApplicationContext(DbContextOptions options) : base(options) 
         {
             Database.EnsureCreated();

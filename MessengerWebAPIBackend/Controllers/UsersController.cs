@@ -23,7 +23,7 @@ namespace MessengerWebAPIBackend.Controllers
         [HttpGet]
         public async Task<IActionResult> Get(string login, string password)
         {
-            var user = _context.Users.FirstOrDefault(u => u.Login == login && u.Password == password);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Login == login && u.Password == password);
             if (user is null) return Unauthorized();
             var claims = new List<Claim>()
             {

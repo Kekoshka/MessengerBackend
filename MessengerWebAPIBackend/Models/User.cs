@@ -7,6 +7,7 @@
         public string Login { get; set; }
         public string Password { get; set; }
         public DateTime LastAction { get; set; }
-        public byte[] Photo { get; set; }
+        public byte[]? Photo { get; set; }
+        public ICollection<Message> Messages { get; set; }
     }
 }
