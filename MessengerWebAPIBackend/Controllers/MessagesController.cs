@@ -1,7 +1,9 @@
 ﻿using MessengerWebAPIBackend.Context;
+using MessengerWebAPIBackend.Hubs;
 using MessengerWebAPIBackend.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
@@ -12,9 +14,11 @@ namespace MessengerWebAPIBackend.Controllers
     public class MessagesController : ControllerBase
     {
         ApplicationContext _context;
-        public MessagesController(ApplicationContext context)
+        IHubContext<MessengerHub> _hub;
+        public MessagesController(ApplicationContext context, IHubContext<MessengerHub> hub)
         {
             _context = context;
+            _hub = hub;
         }
         [HttpGet]
         public async Task<IActionResult> Get(int userId)
@@ -41,6 +45,9 @@ namespace MessengerWebAPIBackend.Controllers
             };
             await _context.Messages.AddAsync(newMessage);
             await _context.SaveChangesAsync();
+
+            await _hub.Clients.Client(userId.ToString()).SendAsync("PostMessage", newMessage);
+
             return Ok(newMessage);
         }
         [HttpPut]
@@ -52,16 +59,23 @@ namespace MessengerWebAPIBackend.Controllers
                 return NotFound("Message not found or user haven't access");
             message.MessageText = messageText;
             await _context.SaveChangesAsync();
+
+            await _hub.Clients.Client(message.UserToId.ToString()).SendAsync("UpdateMessage", message);
+
             return Ok(message);
         }
         [HttpDelete]
         public async Task<IActionResult> Delete(int messageId)
         {
-            int userId = Convert.ToInt32(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            var message = _context.Messages.FirstOrDefaultAsync(m => m.Id == messageId && m.UserFromId == userId);
+            int userId = Convert.ToInt32(User.Identity?.Name);
+            var message = await _context.Messages.FirstOrDefaultAsync(m => m.Id == messageId && m.UserFromId == userId);
             if (message is null)
                 return NotFound("Message not found or user haven't access");
-            _context.SaveChangesAsync();
+            _context.Messages.Remove(message);
+            await _context.SaveChangesAsync();
+
+            await _hub.Clients.Client(message.UserToId.ToString()).SendAsync("DeleteMessage", message);
+
             return Ok();
         }
     }

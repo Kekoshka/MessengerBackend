@@ -20,5 +20,18 @@ namespace MessengerWebAPIBackend.Context
         {
             optionsBuilder.UseSqlServer(Config.ConnectionString);
         }
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<User>()
+                .HasMany(u => u.MyMessages)
+                .WithOne(m => m.UserFrom)
+                .HasForeignKey(m => m.UserFromId)
+                .IsRequired(false);
+            modelBuilder.Entity<User>()
+                .HasMany(u => u.OtherMessages)
+                .WithOne(m => m.UserTo)
+                .HasForeignKey(m => m.UserToId)
+                .IsRequired(false);
+        }
     }
 }

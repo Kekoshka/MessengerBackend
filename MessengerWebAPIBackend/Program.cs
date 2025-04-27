@@ -3,6 +3,7 @@ using MessengerWebAPIBackend.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using MessengerWebAPIBackend.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -42,5 +43,7 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapHub<MessengerHub>("/messenger");
 
 app.Run();

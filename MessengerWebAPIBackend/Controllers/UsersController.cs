@@ -2,9 +2,12 @@
 using System.Security.Claims;
 using MessengerWebAPIBackend.Common;
 using MessengerWebAPIBackend.Context;
+using MessengerWebAPIBackend.Hubs;
 using MessengerWebAPIBackend.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
@@ -15,9 +18,11 @@ namespace MessengerWebAPIBackend.Controllers
     public class UsersController : ControllerBase
     {
         ApplicationContext _context;
-        public UsersController(ApplicationContext context) 
+        IHubContext<MessengerHub> _hub;
+        public UsersController(ApplicationContext context, IHubContext<MessengerHub> hub) 
         {
             _context = context;
+            _hub = hub;
         }
 
         [HttpGet]
@@ -45,6 +50,21 @@ namespace MessengerWebAPIBackend.Controllers
             await _context.Users.AddAsync(user);
             await _context.SaveChangesAsync();
             return Ok();
+        }
+        [Authorize]
+        [HttpPatch]
+        public async Task<IActionResult> Update(DateTime lastAction)
+        {
+            int userId = Convert.ToInt32(User.Identity?.Name);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            if (user is null)
+                return NotFound();
+            user.LastAction = lastAction;
+            await _context.SaveChangesAsync();
+
+            await _hub.Clients.All.SendAsync("UpdateUserLastAction", user.Id, lastAction);
+
+            return NoContent();
         }
     }
 }
