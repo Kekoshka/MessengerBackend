@@ -8,6 +8,7 @@ namespace MessengerWebAPIBackend.Context
     {
         public DbSet<User> Users { get; set; }
         public DbSet<Message> Messages { get; set; }
+        public DbSet<UserMessages> UserMessages { get; set; }
         public ApplicationContext() 
         {
             Database.EnsureCreated();
@@ -22,16 +23,6 @@ namespace MessengerWebAPIBackend.Context
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<User>()
-                .HasMany(u => u.MyMessages)
-                .WithOne(m => m.UserFrom)
-                .HasForeignKey(m => m.UserFromId)
-                .IsRequired(false);
-            modelBuilder.Entity<User>()
-                .HasMany(u => u.OtherMessages)
-                .WithOne(m => m.UserTo)
-                .HasForeignKey(m => m.UserToId)
-                .IsRequired(false);
         }
     }
 }

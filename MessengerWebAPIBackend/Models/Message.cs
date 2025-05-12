@@ -3,11 +3,9 @@
     public class Message
     {
         public int Id { get; set; }
-        public int UserFromId { get; set; }
-        public int UserToId { get; set; }
+        public ICollection<UserMessages> UserMessages { get; set; }//Первый пользователь - отправитель, остальные получатели
         public string MessageText { get; set; }
-        public User UserFrom { get; set; }
-        public User UserTo { get; set; }
+        public DateTime PublicationDate { get; set; }
     }
 }
 

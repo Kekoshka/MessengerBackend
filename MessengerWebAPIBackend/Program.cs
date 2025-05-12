@@ -27,7 +27,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
             //Нужно дописать и еще дописать AuthOptions
         };
-    });
+    }); 
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
